@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <input type="text" id="nctbUrl" value="http://nctb.gov.bd/site/page/079828a6-18e6-44c1-9a2d-59f8d223199c">
+    <button onclick="fetchData()">Fetch</button>
+    <a href="http://cors-anywhere.herokuapp.com/" target="_blank"><button>get CORS permission</button></a>
+    <a id="downloadAnchorElem" style="display:none"> Download This Json</a>
+    <div id="content">
+
+    </div>
+
+    <script>
+
+
+
+        function fetchData() {
+
+            var nctbUrl = 'http://cors-anywhere.herokuapp.com/' + $('#nctbUrl').val();
+            jsonObj = {};
+
+            console.log(nctbUrl)
+            $.get(nctbUrl, function (data) {
+
+                var startPos = data.indexOf("<table")
+                var endPos = data.indexOf("</table>")
+                var table = data.substring(startPos, endPos)
+
+
+                // $('#content').html(table);
+
+                $(table).find('tr').each(function (tr_idx, tr) {
+
+                    // $(tr).children('td').each( (td_idx, td) => {
+                    //     console.log( '[' +tr_idx+ ',' +td_idx+ '] => ' + $(td).html());
+                    // });  
+
+                    var pdfLink = $($(tr).children('td')[2]).children('a').attr('href');
+
+                    var name = $($(tr).children('td')[1]).text().trim();
+
+
+                    item = {}
+                    item["pdfLink"] = pdfLink;
+                    item["name"] = name;
+                    item["type"] = "pdf";
+                    item["details"] = "- বাংলা ভার্সন";
+
+                    jsonObj[generateUUID()] = item;
+
+
+
+
+                    pdfLink = $($(tr).children('td')[3]).children('a').attr('href');
+
+
+
+                    item = {}
+                    item["pdfLink"] = pdfLink;
+                    item["name"] = name;
+                    item["type"] = "pdf";
+                    item["details"] = "- ইংরেজি ভার্সন";
+
+                    jsonObj[generateUUID()] = item;
+
+                    //var eachBanglaLiksTd = $(tr).children('td')[2];
+                    // try {
+                    //     console.log()
+                    // }
+                    // catch (err) {
+                    //     document.getElementById("content").innerHTML = document.getElementById("content").innerHTML + err.message;
+                    // }
+
+
+                });
+                jQuery.each(jsonObj, function (i, val) {
+                    if (val.pdfLink === null || val.pdfLink === "" || val.pdfLink === undefined || val === null || val === "" || val === undefined) // delete index
+                    {
+                        delete jsonObj[i];
+                    }
+                });
+
+
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonObj).replace(/null,/g, '').replace(/{/g, '{\n').replace(/},/g, '\n},\n').replace(/","/g, '",\n"'));
+                var dlAnchorElem = document.getElementById('downloadAnchorElem');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "for_firebase.json");
+                //    dlAnchorElem.click();
+
+                console.log(jsonObj)
+
+                $('#content').html(JSON.stringify(jsonObj).replace(/null,/g, '').replace(/{/g, '{ <br>').replace(/,/g, ',<br>').replace(/}/g, '<br>}'))
+
+                $("#downloadAnchorElem").show()
+            });
+
+
+        }
+
+
+        function generateUUID() { // Public Domain/MIT
+            var d = new Date().getTime();//Timestamp
+            var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16;//random number between 0 and 16
+                if (d > 0) {//Use timestamp until depleted
+                    r = (d + r) % 16 | 0;
+                    d = Math.floor(d / 16);
+                } else {//Use microseconds since page-load if supported
+                    r = (d2 + r) % 16 | 0;
+                    d2 = Math.floor(d2 / 16);
+                }
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+    </script>
+</body>
+
+</html>
