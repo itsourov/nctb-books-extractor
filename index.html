@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <input type="text" id="nctbUrl" value="http://nctb.gov.bd/site/page/079828a6-18e6-44c1-9a2d-59f8d223199c">
+    <input type="text" id="nctbUrl" value="http://nctb.portal.gov.bd/site/page/6d47e6ee-fae0-4aea-9054-c3461ba5ec97">
     <button onclick="fetchData()">Fetch</button>
     <a href="http://cors-anywhere.herokuapp.com/" target="_blank"><button>get CORS permission</button></a>
     <a id="downloadAnchorElem" style="display:none"> Download This Json</a>
@@ -44,10 +44,12 @@
                     //     console.log( '[' +tr_idx+ ',' +td_idx+ '] => ' + $(td).html());
                     // });  
 
-                    var pdfLink = $($(tr).children('td')[2]).children('a').attr('href');
+                    pdfLink = $($(tr).children('td')[2]).children('a').attr('href');
+
+                    newpdfLink = $($(tr).children('td')[3]).children('a').attr('href');
+
 
                     var name = $($(tr).children('td')[1]).text().trim();
-
 
                     item = {}
                     item["pdfLink"] = pdfLink;
@@ -55,22 +57,30 @@
                     item["type"] = "pdf";
                     item["details"] = "- বাংলা ভার্সন";
 
-                    jsonObj[generateUUID()] = item;
+                    if (pdfLink == newpdfLink) {
+                        item["details"] = "nctb book";
+                        jsonObj[generateUUID()] = item;
+                    } else {
+                        jsonObj[generateUUID()] = item;
+
+
+                        item2 = {}
+                        item2["pdfLink"] = newpdfLink;
+                        item2["name"] = name;
+                        item2["type"] = "pdf";
+                        item2["details"] = "- ইংরেজি ভার্সন";
+                        jsonObj[generateUUID()] = item2;
+
+
+                    }
 
 
 
 
-                    pdfLink = $($(tr).children('td')[3]).children('a').attr('href');
 
 
 
-                    item = {}
-                    item["pdfLink"] = pdfLink;
-                    item["name"] = name;
-                    item["type"] = "pdf";
-                    item["details"] = "- ইংরেজি ভার্সন";
 
-                    jsonObj[generateUUID()] = item;
 
                     //var eachBanglaLiksTd = $(tr).children('td')[2];
                     // try {
@@ -82,7 +92,9 @@
 
 
                 });
+
                 jQuery.each(jsonObj, function (i, val) {
+
                     if (val.pdfLink === null || val.pdfLink === "" || val.pdfLink === undefined || val === null || val === "" || val === undefined) // delete index
                     {
                         delete jsonObj[i];
